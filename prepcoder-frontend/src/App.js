@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import "./App.css";
 
-const API = "https://prepcoder.onrender.com"; // change after deploy
+const API = "https://prepcoder-1.onrender.com/"; // change after deploy
 
 function App() {
   const [email, setEmail] = useState("");
