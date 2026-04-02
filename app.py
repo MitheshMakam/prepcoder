@@ -1,56 +1,70 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import subprocess
-import tempfile
 import os
 
 app = Flask(__name__)
 CORS(app)
 
-USER = {"email": "test@test.com", "password": "1234"}
-
-problems = [
-    {"id": 1, "title": "Two Sum", "difficulty": "Easy"},
-    {"id": 2, "title": "Reverse String", "difficulty": "Easy"},
-    {"id": 3, "title": "Longest Substring", "difficulty": "Medium"},
+# Dummy users (for login)
+users = [
+    {"username": "admin", "password": "123"}
 ]
 
+# Dummy problems
+problems = [
+    {
+        "id": 1,
+        "title": "Print Hello World",
+        "description": "Print hello world",
+    },
+    {
+        "id": 2,
+        "title": "Sum Two Numbers",
+        "description": "Take two numbers and return sum",
+    },
+    {
+        "id": 3,
+        "title": "Check Even or Odd",
+        "description": "Check if number is even or odd",
+    }
+]
+
+# LOGIN API
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
-    if data["email"] == USER["email"] and data["password"] == USER["password"]:
-        return jsonify({"message": "Login success"})
+    username = data.get("username")
+    password = data.get("password")
+
+    for user in users:
+        if user["username"] == username and user["password"] == password:
+            return jsonify({"message": "Login successful"})
+    
     return jsonify({"message": "Invalid credentials"}), 401
 
+
+# GET PROBLEMS
 @app.route("/problems", methods=["GET"])
 def get_problems():
     return jsonify(problems)
 
+
+# RUN CODE (basic simulation)
 @app.route("/run", methods=["POST"])
 def run_code():
-    code = request.json.get("code")
+    data = request.json
+    code = data.get("code")
 
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as f:
-            f.write(code.encode())
-            filename = f.name
-
-        result = subprocess.run(
-            ["python", filename],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-
-        os.remove(filename)
-
-        return jsonify({
-            "output": result.stdout,
-            "error": result.stderr
-        })
-
+        # WARNING: simple exec (for demo only)
+        local_vars = {}
+        exec(code, {}, local_vars)
+        return jsonify({"output": "Code executed"})
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"output": str(e)})
 
+
+# ✅ IMPORTANT FOR RENDER
 if __name__ == "__main__":
-    app.run()
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
