@@ -5,19 +5,25 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Users
+# Dummy users (for login)
 users = [
-    {"username": "admin", "password": "123"}
+    {"username": "admin", "password": "123"},
+    {"username": "user", "password": "123"}
 ]
 
-# Problems
+# Dummy problems
 problems = [
-    {"id": 1, "title": "Print Hello World", "description": "Print hello world"},
-    {"id": 2, "title": "Sum Two Numbers", "description": "Return sum of two numbers"},
-    {"id": 3, "title": "Even or Odd", "description": "Check even or odd"}
+    {"id": 1, "title": "Two Sum"},
+    {"id": 2, "title": "Reverse String"},
+    {"id": 3, "title": "Palindrome Check"}
 ]
 
-# LOGIN
+# ✅ HOME ROUTE (IMPORTANT)
+@app.route("/")
+def home():
+    return "Backend running"
+
+# ✅ LOGIN
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
@@ -27,17 +33,15 @@ def login():
     for user in users:
         if user["username"] == username and user["password"] == password:
             return jsonify({"success": True})
-    
+
     return jsonify({"success": False}), 401
 
-
-# GET PROBLEMS
+# ✅ GET PROBLEMS
 @app.route("/problems", methods=["GET"])
 def get_problems():
     return jsonify(problems)
 
-
-# RUN CODE
+# ✅ RUN CODE (basic unsafe version)
 @app.route("/run", methods=["POST"])
 def run_code():
     data = request.json
@@ -50,8 +54,7 @@ def run_code():
     except Exception as e:
         return jsonify({"output": str(e)})
 
-
-# RENDER FIX
+# ✅ RENDER COMPATIBLE
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
