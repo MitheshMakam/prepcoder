@@ -1,72 +1,93 @@
-import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-const BASE_URL = "https://prepcoder-1.onrender.com";
+const API = "https://prepcoder-final.onrender.com";
 
-function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [problems, setProblems] = useState([]);
+function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // LOAD PROBLEMS
-  const loadProblems = async () => {
-    const res = await fetch(`${BASE_URL}/problems`);
-    const data = await res.json();
-    setProblems(data);
-  };
-
-  useEffect(() => {
-    if (loggedIn) loadProblems();
-  }, [loggedIn]);
-
-  // LOGIN
   const handleLogin = async () => {
-    const res = await fetch(`${BASE_URL}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch(`${API}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+      });
 
-    if (res.ok) {
-      setLoggedIn(true);
-    } else {
-      alert("Invalid credentials");
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("loggedIn", "true");
+        window.location.href = "/problems";
+      } else {
+        alert("Invalid credentials");
+      }
+    } catch (err) {
+      alert("Backend not reachable");
     }
   };
 
-  // UI
-  if (!loggedIn) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "100px" }}>
-        <h2>Login</h2>
-        <input
-          placeholder="username"
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <br /><br />
-        <input
-          type="password"
-          placeholder="password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <br /><br />
-        <button onClick={handleLogin}>Login</button>
-      </div>
-    );
-  }
+  return (
+    <div style={{ textAlign: "center", marginTop: "100px" }}>
+      <h1>PrepCoder Login</h1>
+
+      <input
+        placeholder="Username"
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <br /><br />
+
+      <input
+        type="password"
+        placeholder="Password"
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <br /><br />
+
+      <button onClick={handleLogin}>Login</button>
+    </div>
+  );
+}
+
+function Problems() {
+  const [problems, setProblems] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API}/problems`)
+      .then(res => res.json())
+      .then(data => setProblems(data))
+      .catch(() => alert("Failed to load problems"));
+  }, []);
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>Problems</h2>
+      <h1>Problems</h1>
+
       {problems.map((p) => (
-        <div key={p.id} style={{ border: "1px solid black", margin: "10px", padding: "10px" }}>
-          <h3>{p.title}</h3>
-          <p>{p.description}</p>
+        <div key={p.id} style={{ margin: "10px 0" }}>
+          {p.title}
         </div>
       ))}
     </div>
+  );
+}
+
+function App() {
+  const isLoggedIn = localStorage.getItem("loggedIn");
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route
+          path="/problems"
+          element={isLoggedIn ? <Problems /> : <Navigate to="/" />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
