@@ -5,31 +5,19 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Dummy users (for login)
+# Users
 users = [
     {"username": "admin", "password": "123"}
 ]
 
-# Dummy problems
+# Problems
 problems = [
-    {
-        "id": 1,
-        "title": "Print Hello World",
-        "description": "Print hello world",
-    },
-    {
-        "id": 2,
-        "title": "Sum Two Numbers",
-        "description": "Take two numbers and return sum",
-    },
-    {
-        "id": 3,
-        "title": "Check Even or Odd",
-        "description": "Check if number is even or odd",
-    }
+    {"id": 1, "title": "Print Hello World", "description": "Print hello world"},
+    {"id": 2, "title": "Sum Two Numbers", "description": "Return sum of two numbers"},
+    {"id": 3, "title": "Even or Odd", "description": "Check even or odd"}
 ]
 
-# LOGIN API
+# LOGIN
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
@@ -38,9 +26,9 @@ def login():
 
     for user in users:
         if user["username"] == username and user["password"] == password:
-            return jsonify({"message": "Login successful"})
+            return jsonify({"success": True})
     
-    return jsonify({"message": "Invalid credentials"}), 401
+    return jsonify({"success": False}), 401
 
 
 # GET PROBLEMS
@@ -49,22 +37,21 @@ def get_problems():
     return jsonify(problems)
 
 
-# RUN CODE (basic simulation)
+# RUN CODE
 @app.route("/run", methods=["POST"])
 def run_code():
     data = request.json
     code = data.get("code")
 
     try:
-        # WARNING: simple exec (for demo only)
         local_vars = {}
         exec(code, {}, local_vars)
-        return jsonify({"output": "Code executed"})
+        return jsonify({"output": "Code executed successfully"})
     except Exception as e:
         return jsonify({"output": str(e)})
 
 
-# ✅ IMPORTANT FOR RENDER
+# RENDER FIX
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)

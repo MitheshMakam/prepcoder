@@ -1,133 +1,69 @@
 import React, { useState, useEffect } from "react";
-import Editor from "@monaco-editor/react";
-import "./App.css";
 
-const API = "https://prepcoder-1.onrender.com/"; // change after deploy
+const BASE_URL = "https://prepcoder-1.onrender.com";
 
 function App() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [problems, setProblems] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [selectedProblem, setSelectedProblem] = useState(null);
-  const [code, setCode] = useState("# write your code here");
+  const [problems, setProblems] = useState([]);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  // LOAD PROBLEMS
+  const loadProblems = async () => {
+    const res = await fetch(`${BASE_URL}/problems`);
+    const data = await res.json();
+    setProblems(data);
+  };
 
   useEffect(() => {
     if (loggedIn) loadProblems();
   }, [loggedIn]);
 
-  async function handleLogin() {
-    const res = await fetch(`${API}/login`, {
+  // LOGIN
+  const handleLogin = async () => {
+    const res = await fetch(`${BASE_URL}/login`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ username, password }),
     });
 
-    const data = await res.json();
-    if (res.ok) setLoggedIn(true);
-    else alert(data.message);
-  }
+    if (res.ok) {
+      setLoggedIn(true);
+    } else {
+      alert("Invalid credentials");
+    }
+  };
 
-  async function loadProblems() {
-    const res = await fetch(`${API}/problems`);
-    const data = await res.json();
-    setProblems(data);
-  }
-
-  async function runCode() {
-    const res = await fetch(`${API}/run`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ code })
-    });
-
-    const data = await res.json();
-    alert(data.output || data.error);
-  }
-
-  if (selectedProblem) {
-    return (
-      <div className="container">
-        <div className="topbar">
-          <button className="button" onClick={() => setSelectedProblem(null)}>
-            ← Back
-          </button>
-          <button className="button" onClick={runCode}>
-            Run Code
-          </button>
-        </div>
-
-        <h2>{selectedProblem.title}</h2>
-        <span className={`badge ${selectedProblem.difficulty.toLowerCase()}`}>
-          {selectedProblem.difficulty}
-        </span>
-
-        <div className="editor-container">
-          <Editor
-            height="400px"
-            defaultLanguage="python"
-            value={code}
-            onChange={(value) => setCode(value)}
-            theme="vs-dark"
-          />
-        </div>
-      </div>
-    );
-  }
-
+  // UI
   if (!loggedIn) {
     return (
-      <div className="container">
-        <h2>PrepCoder 🚀</h2>
-
+      <div style={{ textAlign: "center", marginTop: "100px" }}>
+        <h2>Login</h2>
         <input
-          className="input"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="username"
+          onChange={(e) => setUsername(e.target.value)}
         />
-
+        <br /><br />
         <input
-          className="input"
           type="password"
-          placeholder="Password"
-          value={password}
+          placeholder="password"
           onChange={(e) => setPassword(e.target.value)}
         />
-
-        <button className="button" onClick={handleLogin}>
-          Login
-        </button>
+        <br /><br />
+        <button onClick={handleLogin}>Login</button>
       </div>
     );
   }
 
   return (
-    <div className="container">
+    <div style={{ padding: "20px" }}>
       <h2>Problems</h2>
-
       {problems.map((p) => (
-        <div key={p.id} className="card">
-          <div>
-            <div>{p.title}</div>
-            <span className={`badge ${p.difficulty.toLowerCase()}`}>
-              {p.difficulty}
-            </span>
-          </div>
-
-          <button
-            className="button"
-            onClick={() => {
-              setSelectedProblem(p);
-              setCode("# write your code here");
-            }}
-          >
-            Solve
-          </button>
+        <div key={p.id} style={{ border: "1px solid black", margin: "10px", padding: "10px" }}>
+          <h3>{p.title}</h3>
+          <p>{p.description}</p>
         </div>
       ))}
     </div>
