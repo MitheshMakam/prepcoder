@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Dummy users (for login)
+# Dummy users
 users = [
     {"username": "admin", "password": "123"},
     {"username": "user", "password": "123"}
@@ -18,10 +18,15 @@ problems = [
     {"id": 3, "title": "Palindrome Check"}
 ]
 
-# ✅ HOME ROUTE (IMPORTANT)
+# ✅ HOME
 @app.route("/")
 def home():
     return "Backend running"
+
+# ✅ DEBUG (keep this for testing)
+@app.route("/debug")
+def debug():
+    return "NEW CODE IS RUNNING"
 
 # ✅ LOGIN
 @app.route("/login", methods=["POST"])
@@ -36,12 +41,12 @@ def login():
 
     return jsonify({"success": False}), 401
 
-# ✅ GET PROBLEMS
+# ✅ GET PROBLEMS (THIS WAS YOUR ISSUE)
 @app.route("/problems", methods=["GET"])
 def get_problems():
     return jsonify(problems)
 
-# ✅ RUN CODE (basic unsafe version)
+# ✅ RUN CODE (basic)
 @app.route("/run", methods=["POST"])
 def run_code():
     data = request.json
@@ -54,7 +59,7 @@ def run_code():
     except Exception as e:
         return jsonify({"output": str(e)})
 
-# ✅ RENDER COMPATIBLE
+# ✅ RENDER ENTRY
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
